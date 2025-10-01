@@ -1,0 +1,22 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    ports:
+      - "8000:8000"          # отдаём API наружу на хост-машину
+    environment:
+      # здесь позже появятся переменные для WireGuard/SSH и т.д.
+      PYTHONUNBUFFERED: "1"
+    restart: unless-stopped
+
+  bot:
+    build:
+      context: .
+      dockerfile: apps/bot/Dockerfile
+    depends_on:
+      - api                  # бот стартует после API
+    environment:
+      BOT_TOKEN: ${BOT_TOKEN}                  # берётся из файла .env в корне
+      API_BASE_URL: http://api:8000            # бот обращается к API по имени сервиса
+    restart: unless-stopped
